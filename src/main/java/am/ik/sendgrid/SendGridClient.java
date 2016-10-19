@@ -15,11 +15,14 @@
  */
 package am.ik.sendgrid;
 
+import java.util.List;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import am.ik.sendgrid.alerts.Alert;
 import am.ik.sendgrid.sendmail.Mail;
 import am.ik.sendgrid.util.JsonCodec;
 import io.netty.buffer.ByteBuf;
@@ -41,12 +44,17 @@ public class SendGridClient {
 		this.version = version;
 	}
 
-	public Mono<JsonNode> getAlerts() {
-		return this.doGet("getAlerts", JsonNode.class);
+	public Mono<List<Alert>> getAlerts() {
+		return this.doGet("alerts", new TypeReference<List<Alert>>() {
+		});
+	}
+
+	public Mono<Alert> postAlerts(Alert alert) {
+		return this.doPost("alerts", alert, Alert.class);
 	}
 
 	public Mono<JsonNode> getUserProfile() {
-		return this.doGet("user/profile", JsonNode.class);
+		return this.doGet("user/profile", /* TODO */ JsonNode.class);
 	}
 
 	public Mono<Void> postMailSend(Mail mail) {
@@ -54,10 +62,15 @@ public class SendGridClient {
 	}
 
 	public Mono<JsonNode> apiKeys() {
-		return this.doGet("api_keys", JsonNode.class);
+		return this.doGet("api_keys", /* TODO */JsonNode.class);
 	}
 
 	private <T> Mono<T> doGet(String api, Class<T> responseType) {
+		return this.httpClient.get(this.url(api), o -> this.addHeaders(o).sendHeaders())
+				.compose(this.deserializedResponse(responseType));
+	}
+
+	private <T> Mono<T> doGet(String api, TypeReference<T> responseType) {
 		return this.httpClient.get(this.url(api), o -> this.addHeaders(o).sendHeaders())
 				.compose(this.deserializedResponse(responseType));
 	}
@@ -75,6 +88,12 @@ public class SendGridClient {
 
 	private <T> Function<Mono<HttpClientResponse>, Mono<T>> deserializedResponse(
 			Class<T> responseType) {
+		return inbound -> inbound.then(i -> i.receive().aggregate().toInputStream())
+				.map(JsonCodec.decode(this.objectMapper, responseType));
+	}
+
+	private <T> Function<Mono<HttpClientResponse>, Mono<T>> deserializedResponse(
+			TypeReference<T> responseType) {
 		return inbound -> inbound.then(i -> i.receive().aggregate().toInputStream())
 				.map(JsonCodec.decode(this.objectMapper, responseType));
 	}

@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.netty.buffer.ByteBuf;
@@ -38,6 +39,18 @@ public final class JsonCodec {
 
 	public static <T> Function<InputStream, T> decode(ObjectMapper objectMapper,
 			Class<T> type) {
+		return inputStream -> {
+			try (InputStream in = inputStream) {
+				return objectMapper.readValue(in, type);
+			}
+			catch (IOException e) {
+				throw new UncheckedIOException("Unable to parse JSON Payload", e);
+			}
+		};
+	}
+
+	public static <T> Function<InputStream, T> decode(ObjectMapper objectMapper,
+			TypeReference<T> type) {
 		return inputStream -> {
 			try (InputStream in = inputStream) {
 				return objectMapper.readValue(in, type);
