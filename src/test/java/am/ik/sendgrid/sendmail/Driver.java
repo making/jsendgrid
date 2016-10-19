@@ -17,15 +17,17 @@ package am.ik.sendgrid.sendmail;
 
 import am.ik.sendgrid.SendGrid;
 import am.ik.sendgrid.SendGridClient;
-import reactor.core.publisher.Mono;
 
 public class Driver {
 	public static void main(String[] args) {
 		SendGridClient client = SendGrid.apiKey(System.getenv("SENDGRID_API_KEY"))
 				.client();
-		Mail mail = SimpleMailBuilder.from("other@example.com").subject("Hello World!!")
-				.to("makingx+demo@gmail.com").plain("Hi!!").build();
-		Mono<Void> sent = client.mailSend(mail);
-		sent.block();
+//		Mail mail = SimpleMailBuilder.from("other@example.com").subject("Hello World!!")
+//				.to("tmaki@pivotal.io").plain("Hi!!").build();
+//		Mono<Void> sent = client.postMailSend(mail);
+//		sent.block();
+//		client.getAlerts().log().doOnSuccess(x -> System.out.println(x)).block();
+
+		client.getUserProfile().log().doOnSuccess(x -> System.out.println(x)).block();
 	}
 }

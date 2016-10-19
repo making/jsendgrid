@@ -41,15 +41,15 @@ public class SendGridClient {
 		this.version = version;
 	}
 
-	public Mono<JsonNode> alerts() {
-		return this.doGet("alerts", JsonNode.class);
+	public Mono<JsonNode> getAlerts() {
+		return this.doGet("getAlerts", JsonNode.class);
 	}
 
-	public Mono<JsonNode> userProfile() {
+	public Mono<JsonNode> getUserProfile() {
 		return this.doGet("user/profile", JsonNode.class);
 	}
 
-	public Mono<Void> mailSend(Mail mail) {
+	public Mono<Void> postMailSend(Mail mail) {
 		return this.doPost("mail/send", mail, Void.class);
 	}
 
