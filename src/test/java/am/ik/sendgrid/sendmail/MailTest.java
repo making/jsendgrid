@@ -30,21 +30,18 @@ public class MailTest {
 		Mail mail = SimpleMailBuilder.from("other@example.com").subject("Hello World!!")
 				.to("makingx@example.com").plain("Hi!!").build();
 		assertThat(objectMapper.writeValueAsString(mail), is(
-				"{\"personalizations\":[{\"to\":[{\"email\":\"makingx@example.com\"}]}],\"from\":{\"email\":\"other@example.com\"},\"subject\":\"Hello World!!\",\"content\":[{\"type\":\"text/plain\",\"value\":\"Hi!!\"}]}\n"));
+				"{\"personalizations\":[{\"to\":[{\"email\":\"makingx@example.com\"}]}],\"from\":{\"email\":\"other@example.com\"},\"subject\":\"Hello World!!\",\"content\":[{\"type\":\"text/plain\",\"value\":\"Hi!!\"}]}"));
 	}
 
 	@Test
 	public void deserialize() throws Exception {
-		Mail conetnt = objectMapper.readValue("{\n" + "  \"personalizations\": [\n"
-				+ "    {\n" + "      \"to\": [\n" + "        {\n"
-				+ "          \"email\": \"john@example.com\"\n" + "        }\n"
-				+ "      ]\n" + "    }\n" + "  ],\n"
-				+ "  \"subject\": \"Hello, World!\",\n" + "  \"from\": {\n"
-				+ "    \"email\": \"from_address@example.com\"\n" + "  },\n"
-				+ "  \"content\": [\n" + "    {\n" + "      \"type\": \"text/plain\",\n"
-				+ "      \"value\": \"Hello, World!\"\n" + "    }\n" + "  ]\n" + "}",
-				Mail.class);
-		assertThat(conetnt.subject(), is("Hello, World!"));
+		String json = "{\"personalizations\":[{\"to\":[{\"email\":\"john@example.com\"}]}],\"from\":{\"email\":\"from_address@example.com\"},\"subject\":\"Hello, World!\",\"content\":[{\"type\":\"text/plain\",\"value\":\"Hello, World!\"}]}";
+		Mail mail = objectMapper.readValue(json, Mail.class);
+		assertThat(mail.from().email(), is("from_address@example.com"));
+		assertThat(mail.subject(), is("Hello, World!"));
+		assertThat(mail.personalizations().get(0).to().get(0).email(),
+				is("john@example.com"));
+		assertThat(mail.content().get(0).type(), is("text/plain"));
+		assertThat(mail.content().get(0).value(), is("Hello, World!"));
 	}
-
 }
